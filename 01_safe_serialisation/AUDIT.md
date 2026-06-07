@@ -1,8 +1,8 @@
 # Experiment 01 - Safe Serialisation Formats
 
-## The risk
+## Scenario
 
-A team receives a model file from an external source and loads it into their pipeline. What they do not see is that a payload inside the file executes at load time, the moment `torch.load()` is called. It runs silently and the load completes without error, so nothing looks wrong. The only requirement on the attacker's side was that the victim loaded the file.
+A team pulls a model from an external source, such as a public hub, a vendor, or a colleague, and loads it into their pipeline. What they do not see is a payload inside the file that executes the moment `torch.load()` is called. It runs silently and the load completes without error, so nothing looks wrong. The only thing the attacker needed was for the victim to load the file, and the result is code execution on the machine running the pipeline, typically a host with access to data, credentials, and the training cluster.
 
 ## How it works
 

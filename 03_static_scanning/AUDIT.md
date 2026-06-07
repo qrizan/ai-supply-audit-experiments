@@ -1,8 +1,8 @@
 # Experiment 03 - Static Model Scanning
 
-## The risk
+## Scenario
 
-A model file carries a hidden payload that runs at load time. Integrity and provenance checks do not see it - the file can have a valid checksum and a credible source. The only safe way to detect the payload is to inspect the file before it is ever loaded.
+A model file can pass every check so far (a valid checksum from experiment 02 and a credible source) and still carry a payload that runs at load time. Integrity proves the file is unchanged; provenance proves who sent it; neither looks at what the file actually does. An attacker who controls the published artifact at the source defeats both. The only thing left that catches it is inspecting the file's contents before it is ever loaded.
 
 ## How it works
 

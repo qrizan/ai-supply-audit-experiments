@@ -1,8 +1,8 @@
 # Experiment 02 - Integrity Verification
 
-## The risk
+## Scenario
 
-A model file is swapped or modified somewhere between the author publishing it and the team loading it - on a mirror, in transit, or in a shared registry. The file name, extension, and format all look correct, so nothing seems wrong. The weights inside, however, are not the ones the author released. Without a way to confirm the file matches what was published, the team has no way to notice the substitution.
+A model file is swapped or modified somewhere between the author publishing it and the team loading it, whether on a mirror, in transit, or in a shared registry. The name, extension, and format all look correct, so nothing seems wrong, but the weights inside are not the ones the author released. The attacker never needed access to the victim's machine, only to the file somewhere along its path. Without a way to confirm the file matches what was published, the substitution goes unnoticed and the team runs an attacker's weights as if they were trusted.
 
 ## How it works
 
