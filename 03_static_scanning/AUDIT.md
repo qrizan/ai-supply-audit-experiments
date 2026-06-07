@@ -1,0 +1,79 @@
+# Experiment 03 - Static Model Scanning
+
+## The risk
+
+A model file carries a hidden payload that runs at load time. Integrity and provenance checks do not see it - the file can have a valid checksum and a credible source. The only safe way to detect the payload is to inspect the file before it is ever loaded.
+
+## How it works
+
+A static scanner reads a model file and inspects what it would do, without executing it. modelscan (Protect AI) scans multiple model formats - PyTorch, TensorFlow, Keras, SafeTensors - and assigns a severity to each finding. A PyTorch file is a ZIP archive with the pickle inside; modelscan reads into the archive directly and flags unsafe operators such as `os.system`. The model is never loaded, so the payload never runs.
+
+```
+malicious_model.pkl (PyTorch = ZIP + pickle)
+│
+└── modelscan ──► reads into the archive ──► CRITICAL: unsafe operator 'system'
+
+embeddings.safetensors
+│
+└── modelscan ──► No issues found
+```
+
+## Run
+
+Samples:
+- `samples/models/vulnerable/malicious_model.pkl` - PyTorch file with an `os.system` payload
+- `samples/models/safe/embeddings.safetensors` - data-only format, nothing to execute
+
+**1. Scan the malicious model:**
+
+```bash
+docker run --rm --network none \
+  -v $(pwd)/samples:/app/samples:ro \
+  ai-audit modelscan -p samples/models/vulnerable/malicious_model.pkl
+```
+
+```
+--- Summary ---
+
+Total Issues: 1
+
+Total Issues By Severity:
+
+    - LOW: 0
+    - MEDIUM: 0
+    - HIGH: 0
+    - CRITICAL: 1
+
+--- CRITICAL ---
+
+Unsafe operator found:
+  - Severity: CRITICAL
+  - Description: Use of unsafe operator 'system' from module 'posix'
+  - Source: /app/samples/models/vulnerable/malicious_model.pkl:malicious_model/data.pkl
+```
+
+modelscan also prints startup lines and `Errors` / `Skipped` sections for the other (non-pickle) entries inside the archive. Those are cosmetic - focus on the `Summary` and severity sections, shown above.
+
+**2. Scan the SafeTensors model:**
+
+```bash
+docker run --rm --network none \
+  -v $(pwd)/samples:/app/samples:ro \
+  ai-audit modelscan -p samples/models/safe/embeddings.safetensors
+```
+
+```
+--- Summary ---
+
+ No issues found! 🎉
+```
+
+modelscan flags the malicious file CRITICAL for the `system` operator and finds nothing in the SafeTensors file. Both checks read the files without loading them.
+
+## Takeaway
+
+Run modelscan on every model before it is loaded - it detects a payload without executing it. It covers multiple formats and rates severity; treat CRITICAL findings (`os.system`, `subprocess`) as automatic rejection. Static scanning detects known patterns only - a sophisticated attacker can obfuscate to evade it, so it is one layer of defence, used alongside integrity and provenance checks, not a guarantee on its own.
+
+## References
+
+- modelscan (Protect AI) - multi-format model scanner - https://github.com/protectai/modelscan
