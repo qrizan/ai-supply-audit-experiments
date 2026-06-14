@@ -1,4 +1,7 @@
+# Audited clean (no known vulnerabilities) as of 2026-06-14 with pip-audit.
+# Advisories are published continuously - a clean file can turn vulnerable later.
+# Re-audit before relying on this set; see 04_dependency_audit/AUDIT.md.
 numpy==1.26.4
-requests==2.31.0
-Pillow==10.2.0
+requests==2.33.0
+Pillow==12.2.0
 safetensors==0.4.3

@@ -12,7 +12,7 @@ docker build -t ai-audit .
 
 ## Running Experiments
 
-Each experiment runs in an isolated Docker container with network disabled. Instructions are in each experiment's `AUDIT.md`.
+Each experiment runs in an isolated Docker container. Loading untrusted models runs with `--network none`; the one exception is experiment 04 (dependency audit), which must reach an advisory database and runs with network on - it executes no untrusted code, so the isolation rule does not apply. Instructions are in each experiment's `AUDIT.md`.
 
 ## Samples
 
@@ -23,7 +23,7 @@ Each experiment runs in an isolated Docker container with network disabled. Inst
 | `samples/models/vulnerable/malicious_model.pkl` | Pickle with `__reduce__` payload that executes a shell command at load time. Payload writes to `/tmp` only. |
 | `samples/models/vulnerable/tampered_embeddings.safetensors` | Valid SafeTensors file with an intentionally wrong hash in `checksums.json`. |
 | `samples/models/checksums.json` | SHA-256 records. One entry is intentionally wrong. |
-| `samples/requirements/safe_requirements.txt` | Clean dependencies - no known vulnerabilities. |
+| `samples/requirements/safe_requirements.txt` | Dependencies audited clean as of 2026-06-14. Carries an audit date because a clean set turns vulnerable as new advisories land - re-audit before relying on it. |
 | `samples/requirements/vulnerable_requirements.txt` | Dependencies pinned to versions with known CVEs. |
 
 > [!WARNING]
