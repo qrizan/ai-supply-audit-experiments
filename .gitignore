@@ -1,3 +1,8 @@
 .venv/
 __pycache__/
 *.pyc
+
+# Generated SBOM output from experiment 06
+sbom.cdx.json
+*.cdx.json
+*.spdx.json

@@ -110,4 +110,4 @@ For existing pickle-based workflows, always pass `weights_only=True`. For new mo
 - PyTorch torch.load docs - https://pytorch.org/docs/stable/generated/torch.load.html
 - SafeTensors specification - https://huggingface.co/docs/safetensors/index
 - SafeTensors security audit (Trail of Bits, 2023) - https://huggingface.co/blog/safetensors-security-audit
-- CVE-2023-6730 - deserialization of untrusted data via crafted pickle file - https://nvd.nist.gov/vuln/detail/CVE-2023-6730
+- CVE-2023-6730 - deserialization of untrusted data (CWE-502) in Hugging Face Transformers before 4.36 - https://nvd.nist.gov/vuln/detail/CVE-2023-6730

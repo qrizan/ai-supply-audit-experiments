@@ -1,0 +1,11 @@
+# Look-alike dependency names for the typosquatting experiment.
+# These are NAMES ONLY, read as text for static analysis.
+# Do NOT `pip install` this file - several entries imitate real packages.
+requests==2.31.0
+numpy==1.26.4
+reqeusts==2.31.0
+python-dateutils==2.8.2
+safetensor==0.4.3
+scikit-lean==1.4.0
+urlib3==1.26.18
+my-internal-utils==0.1.0

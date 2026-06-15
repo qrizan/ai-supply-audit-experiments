@@ -1,0 +1,6 @@
+{
+  "model_type": "demo",
+  "auto_map": {
+    "AutoModel": "modeling_evil.EvilModel"
+  }
+}

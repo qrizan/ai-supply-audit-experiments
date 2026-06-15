@@ -2,7 +2,7 @@
 
 ## Scenario
 
-A model file can pass every check so far (a valid checksum from experiment 02 and a credible source) and still carry a payload that runs at load time. Integrity proves the file is unchanged; provenance proves who sent it; neither looks at what the file actually does. An attacker who controls the published artifact at the source defeats both. The only thing left that catches it is inspecting the file's contents before it is ever loaded.
+A team receives a model, runs every check they have, and it passes: the checksum matches the published value, and the file came from the author's official account. They load it, and a payload buried inside runs. The author's build pipeline had been compromised, so the malicious file is genuinely theirs, with a matching hash and a credible origin. Both checks only ever asked whether the file was the one the author released, never whether that file was safe to run. Integrity confirms the bytes are unchanged and provenance confirms who sent them, but neither looks at what the bytes actually do. The only thing that catches a payload like this is reading the file's contents before it is loaded.
 
 ## How it works
 
