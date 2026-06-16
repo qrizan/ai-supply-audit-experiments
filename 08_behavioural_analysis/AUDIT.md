@@ -23,7 +23,7 @@ The guard here, `behaviour_check.py`, installs such a hook and then loads the mo
    (monitoring)              (active tripwire)
 ```
 
-One honest limit up front: this is a tripwire for observability, not a security boundary. The hook runs in the same process as the model code, so a determined payload can use lower-level calls that raise no Python audit event, or act before the hook is reached. The real containment stays at the OS level: the container, `--network none`, a non-root user, seccomp. The hook tells you what the code tried to do; the container makes sure it cannot actually cause harm.
+This is a tripwire for observability, not a security boundary. The hook runs in the same process as the model code, so a determined payload can use lower-level calls that raise no Python audit event, or act before the hook is reached. The real containment stays at the OS level: the container, `--network none`, a non-root user, seccomp. The hook tells you what the code tried to do; the container makes sure it cannot actually cause harm.
 
 ## Run
 
@@ -37,15 +37,14 @@ Samples:
 docker run --rm --network none \
   -v $(pwd)/samples:/app/samples:ro \
   -v $(pwd)/08_behavioural_analysis:/app/check:ro \
-  ai-audit sh -c "python3 /app/check/behaviour_check.py observe samples/models/vulnerable/malicious_model.pkl; echo '--- /tmp marker ---'; ls -l /tmp/ai_gate_pickle_pwned.txt 2>&1"
+  ai-audit sh -c "python3 /app/check/behaviour_check.py observe samples/models/vulnerable/malicious_model.pkl; ls /tmp/ai_gate_pickle_pwned.txt 2>&1"
 ```
 
 ```
 loading samples/models/vulnerable/malicious_model.pkl  (mode: observe)
 [audit] sensitive operation during load: os.system (b"echo 'ai-gate: pickle payload executed' > /tmp/ai_gate_pickle_pwned.txt",)
 load completed - the operation above was allowed to run
---- /tmp marker ---
--rw-r--r-- 1 root root 33 /tmp/ai_gate_pickle_pwned.txt
+/tmp/ai_gate_pickle_pwned.txt
 ```
 
 The hook prints the exact command the model tried to run, including the full shell string. Because the mode is `observe`, the command is allowed to proceed, so the marker file the payload writes is present afterwards. This is monitoring: you see the behaviour and record it.
@@ -56,20 +55,19 @@ The hook prints the exact command the model tried to run, including the full she
 docker run --rm --network none \
   -v $(pwd)/samples:/app/samples:ro \
   -v $(pwd)/08_behavioural_analysis:/app/check:ro \
-  ai-audit sh -c "python3 /app/check/behaviour_check.py block samples/models/vulnerable/malicious_model.pkl; echo '--- /tmp marker ---'; ls -l /tmp/ai_gate_pickle_pwned.txt 2>&1"
+  ai-audit sh -c "python3 /app/check/behaviour_check.py block samples/models/vulnerable/malicious_model.pkl; ls /tmp/ai_gate_pickle_pwned.txt 2>&1"
 ```
 
 ```
 loading samples/models/vulnerable/malicious_model.pkl  (mode: block)
 [audit] sensitive operation during load: os.system (b"echo 'ai-gate: pickle payload executed' > /tmp/ai_gate_pickle_pwned.txt",)
 [blocked] load aborted: blocked os.system - the operation never ran
---- /tmp marker ---
 ls: cannot access '/tmp/ai_gate_pickle_pwned.txt': No such file or directory
 ```
 
 Same file, same payload, but the hook raised at the `os.system` event, so the command never executed and the marker file was never created. Compare this directly with experiment 01, where loading this exact pickle did create the file: here the behaviour was caught and stopped at the moment it happened.
 
-Look at the two runs side by side: the `[audit]` line is identical in both. Detection is the same. The only difference is whether the hook raises, and that single choice is the whole difference between *recording* an attack (observe) and *preventing* it (block).
+In both runs the `[audit]` line is identical, so detection is the same. The only difference is whether the hook raises, which determines whether the attack is recorded (observe) or prevented (block).
 
 ## Using it in real code
 
@@ -94,7 +92,7 @@ That is the real difference from a scanner. A scanner (experiment 03) is a separ
 
 ## Takeaway
 
-Watch what a model does as it loads, as a runtime complement to static scanning, not a replacement for it. Use `observe` for monitoring and forensics, and `block` as an active tripwire that stops a sensitive operation before it runs. Two limits matter. An audit hook is not a sandbox: it shares the process with the model, so a payload can use calls that raise no audit event, stay dormant while watched, or detect the hook, which is why real isolation has to come from the OS, and every experiment here runs inside a locked-down container for exactly that reason. And dynamic analysis only sees what actually runs during observation, so it can miss a payload that waits for a trigger you did not provide. For this specific pickle path, `weights_only=True` (experiment 01) prevents the call outright; behavioural analysis earns its place when you must run untrusted code anyway, or want a runtime record of what a model really did.
+Watch what a model does as it loads, as a runtime complement to static scanning, not a replacement for it. Use `observe` for monitoring and forensics, and `block` as an active tripwire that stops a sensitive operation before it runs. Two limits matter. An audit hook is not a sandbox: it shares the process with the model, so a payload can use calls that raise no audit event, stay dormant while watched, or detect the hook, which is why real isolation has to come from the OS, and every experiment here runs inside a locked-down container for exactly that reason. And dynamic analysis only sees what actually runs during observation, so it can miss a payload that waits for a trigger you did not provide. For this specific pickle path, `weights_only=True` (experiment 01) prevents the call outright; behavioural analysis is for when you must run untrusted code anyway, or want a runtime record of what a model did.
 
 ## References
 

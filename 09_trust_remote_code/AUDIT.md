@@ -2,7 +2,7 @@
 
 ## Scenario
 
-A team wants to use a popular model from a public hub. Loading it fails with a message: this model requires `trust_remote_code=True`. Plenty of legitimate models say the same, so the team sets the flag and moves on. What that flag actually means is: download the Python files the model author put in the repo and run them in our process. The author's code runs at load time, before any inference, with the team's privileges. Nobody had to hide anything. The team opted in, and the opt-in was the attack.
+A team wants to use a popular model from a public hub. Loading it fails with a message: this model requires `trust_remote_code=True`. Plenty of legitimate models say the same, so the team sets the flag and moves on. What that flag actually means is: download the Python files the model author put in the repo and run them in our process. The author's code runs at load time, before any inference, with the team's privileges. Nothing was hidden: enabling the flag is what allowed the author's code to run.
 
 ## How it works
 
@@ -12,7 +12,7 @@ Some models ship more than weights: they include their own Python (`modeling_*.p
 
 This is the same outcome as the pickle payload in experiment 01, code execution at load, but reached a different way. The pickle hides code inside the weights file and runs it without consent. This runs code from a separate file, with your explicit `trust_remote_code=True`. One is smuggled; the other is sanctioned. Both confirm the theme that loading a model can mean running code.
 
-The sharp part: the safe-format advice from experiment 01 does not save you here. The weights below are a clean `safetensors` file with no code in them, yet the model still runs arbitrary code, because the code lives in a sidecar `.py`, not in the weights. Switching weights to safetensors closes one door; remote code is a different door.
+The safe-format advice from experiment 01 does not help here. The weights below are a clean `safetensors` file with no code in them, yet the model still runs arbitrary code, because the code lives in a sidecar `.py`, not in the weights. Switching weights to safetensors closes one door; remote code is a different door.
 
 One more trap: the remote code can change after you first trusted it. Unless you pin the model to a specific revision, a later push to the repo means you silently run new code on the next load.
 
@@ -40,14 +40,13 @@ Samples:
 docker run --rm --network none \
   -v $(pwd)/samples:/app/samples:ro \
   -v $(pwd)/09_trust_remote_code:/app/check:ro \
-  ai-audit sh -c "python3 /app/check/load_model.py notrust samples/models/remote_code_model; echo '--- /tmp marker ---'; ls -l /tmp/ai_gate_remote_code.txt 2>&1"
+  ai-audit sh -c "python3 /app/check/load_model.py notrust samples/models/remote_code_model; ls /tmp/ai_gate_remote_code.txt 2>&1"
 ```
 
 ```
 weights.safetensors loaded: ['embedding_0', 'embedding_1'] (data only, no code)
 this model declares custom code: modeling_evil.EvilModel
 REFUSED: this model requires remote code; re-run with trust_remote_code=True to allow it
---- /tmp marker ---
 ls: cannot access '/tmp/ai_gate_remote_code.txt': No such file or directory
 ```
 
@@ -59,7 +58,7 @@ The weights load fine and are pure data. The loader sees that the model declares
 docker run --rm --network none \
   -v $(pwd)/samples:/app/samples:ro \
   -v $(pwd)/09_trust_remote_code:/app/check:ro \
-  ai-audit sh -c "python3 /app/check/load_model.py trust samples/models/remote_code_model; echo '--- /tmp marker ---'; ls -l /tmp/ai_gate_remote_code.txt 2>&1; cat /tmp/ai_gate_remote_code.txt"
+  ai-audit sh -c "python3 /app/check/load_model.py trust samples/models/remote_code_model; cat /tmp/ai_gate_remote_code.txt 2>&1"
 ```
 
 ```
@@ -67,8 +66,6 @@ weights.safetensors loaded: ['embedding_0', 'embedding_1'] (data only, no code)
 this model declares custom code: modeling_evil.EvilModel
 trust_remote_code=True -> importing and running the model's own code
 custom model instantiated
---- /tmp marker ---
--rw-r--r-- 1 root root 30 /tmp/ai_gate_remote_code.txt
 ai-gate: remote code executed
 ```
 

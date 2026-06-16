@@ -2,7 +2,7 @@
 
 ## Scenario
 
-A team downloads a model and the checksum published next to it, recomputes the hash, gets a clean match, and loads the file. The weights are an attacker's. Whoever swapped the file on the mirror updated the checksum beside it at the same time, and a hash recomputed from a file will always match a hash the attacker chose for it. The check confirmed the file was intact; it never confirmed the file came from the publisher the team trusts. The substitution leaves no trace, because integrity was the only question being asked, and origin was the one that mattered.
+A team downloads a model and the checksum published next to it, recomputes the hash, gets a clean match, and loads the file. The weights are an attacker's. Whoever swapped the file on the mirror updated the checksum beside it at the same time, and a hash recomputed from a file will always match a hash the attacker chose for it. The check confirmed the file was intact; it did not confirm the file came from the publisher the team trusts. Nothing in the check reveals the substitution, because it only asked whether the file was unchanged, not where it came from.
 
 ## How it works
 

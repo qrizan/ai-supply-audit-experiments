@@ -58,11 +58,11 @@ Load the model, then check `/tmp` for the file the payload writes:
 ```bash
 docker run --rm --network none \
   -v $(pwd)/samples:/app/samples:ro \
-  ai-audit bash -c "python3 -c \"import torch; torch.load('samples/models/vulnerable/malicious_model.pkl', weights_only=False)\"; ls -l /tmp/ai_gate_pickle_pwned.txt; cat /tmp/ai_gate_pickle_pwned.txt"
+  ai-audit bash -c "python3 -c \"import torch; torch.load('samples/models/vulnerable/malicious_model.pkl', weights_only=False)\"; ls /tmp/ai_gate_pickle_pwned.txt; cat /tmp/ai_gate_pickle_pwned.txt"
 ```
 
 ```
--rw-r--r-- 1 root root 33 Jun  7 13:56 /tmp/ai_gate_pickle_pwned.txt
+/tmp/ai_gate_pickle_pwned.txt
 ai-gate: pickle payload executed
 ```
 
